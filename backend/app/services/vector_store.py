@@ -39,6 +39,14 @@ def add_chunks(tenant_id: uuid.UUID, chunks: list[str], chroma_ids: list[str], m
     )
 
 
+def delete_chunks(tenant_id: uuid.UUID, chroma_ids: list[str]):
+    """Remove specific chunks from ChromaDB by their IDs."""
+    if not chroma_ids:
+        return
+    collection = _get_collection(tenant_id)
+    collection.delete(ids=chroma_ids)
+
+
 def query_chunks(tenant_id: uuid.UUID, query: str, top_k: int = 5) -> list[str]:
     """
     Find top_k most relevant chunks for a query string.

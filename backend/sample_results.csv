@@ -1,0 +1,13 @@
+roll_number,semester,course_code,course_name,credit_hours,grade,grade_points
+RIPHAH-001,Fall 2024,CS-101,Introduction to Programming,3,A,4.0
+RIPHAH-001,Fall 2024,CS-102,Mathematics I,3,B+,3.5
+RIPHAH-001,Fall 2024,CS-103,Physics,2,B,3.0
+RIPHAH-001,Fall 2024,CS-104,English Composition,2,A-,3.7
+RIPHAH-002,Fall 2024,CS-101,Introduction to Programming,3,B,3.0
+RIPHAH-002,Fall 2024,CS-102,Mathematics I,3,C+,2.5
+RIPHAH-002,Fall 2024,CS-103,Physics,2,B+,3.5
+RIPHAH-002,Fall 2024,CS-104,English Composition,2,A,4.0
+RIPHAH-003,Fall 2024,CS-101,Introduction to Programming,3,A+,4.0
+RIPHAH-003,Fall 2024,CS-102,Mathematics I,3,A,4.0
+RIPHAH-003,Fall 2024,CS-103,Physics,2,A-,3.7
+RIPHAH-003,Fall 2024,CS-104,English Composition,2,B+,3.5

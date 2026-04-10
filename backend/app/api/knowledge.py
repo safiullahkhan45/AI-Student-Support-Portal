@@ -14,7 +14,7 @@ from app.db.session import get_db
 from app.schemas.knowledge import DocumentResponse
 from app.services.chunker import chunk_text
 from app.services.extractor import extract_text
-from app.services.vector_store import add_chunks
+from app.services.vector_store import add_chunks, delete_chunks
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 
@@ -109,3 +109,29 @@ def list_documents(
         .order_by(KnowledgeDocument.created_at.desc())
         .all()
     )
+
+
+@router.delete("/{document_id}", status_code=204)
+def delete_document(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.admin, UserRole.super_admin)),
+):
+    document = db.query(KnowledgeDocument).filter(
+        KnowledgeDocument.id == document_id,
+        KnowledgeDocument.tenant_id == current_user.tenant_id,
+    ).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Get all chroma IDs before deleting chunks
+    chroma_ids = [chunk.chroma_id for chunk in document.chunks]
+
+    # Delete from PostgreSQL (chunks cascade via relationship)
+    db.query(KnowledgeChunk).filter(KnowledgeChunk.document_id == document_id).delete()
+    db.delete(document)
+    db.commit()
+
+    # Delete from ChromaDB
+    delete_chunks(current_user.tenant_id, chroma_ids)

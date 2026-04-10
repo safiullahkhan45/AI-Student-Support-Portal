@@ -113,3 +113,18 @@ class FeeRecord(Base):
     due_date: Mapped[datetime] = mapped_column(Date, nullable=True)
     challan_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ResultRecord(Base):
+    __tablename__ = "result_records"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("institutions.id"), nullable=False)
+    roll_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    semester: Mapped[str] = mapped_column(String(50), nullable=False)
+    course_code: Mapped[str] = mapped_column(String(20), nullable=False)
+    course_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    credit_hours: Mapped[int] = mapped_column(nullable=False, default=3)
+    grade: Mapped[str] = mapped_column(String(5), nullable=False)
+    grade_points: Mapped[float] = mapped_column(Numeric(3, 2), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
