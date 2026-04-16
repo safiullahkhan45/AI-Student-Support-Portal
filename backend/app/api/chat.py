@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
-from app.db.models import ChatMessage, ChatSession, MessageRole, User
+from app.db.models import ChatMessage, ChatSession, Institution, MessageRole, User
 from app.db.session import get_db
 from app.schemas.chat import MessageResponse, SendMessageRequest, SessionResponse
 from app.services.claude_service import ask_claude
@@ -69,8 +69,12 @@ def send_message(
 
     messages = [{"role": msg.role.value, "content": msg.content} for msg in history]
 
-    # 4. Call Claude
-    reply_text = ask_claude(context=context, messages=messages)
+    # 4. Get institution name for the system prompt
+    institution = db.get(Institution, current_user.tenant_id)
+    institution_name = institution.name if institution else "the university"
+
+    # 5. Call Claude
+    reply_text = ask_claude(context=context, messages=messages, institution_name=institution_name)
 
     # 5. Save assistant reply
     assistant_msg = ChatMessage(

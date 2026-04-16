@@ -1,9 +1,4 @@
 """create_institutions_and_users
-
-Revision ID: 535ba3ad682d
-Revises: 
-Create Date: 2026-03-19 04:04:17.647975
-
 """
 from typing import Sequence, Union
 

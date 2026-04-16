@@ -6,6 +6,7 @@ from app.api.knowledge import router as knowledge_router
 from app.api.chat import router as chat_router
 from app.api.fees import router as fees_router
 from app.api.results import router as results_router
+from app.api.complaints import router as complaints_router
 
 app = FastAPI(title="AI Student Support Portal", version="1.0.0")
 
@@ -23,6 +24,7 @@ app.include_router(knowledge_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(fees_router, prefix="/api/v1")
 app.include_router(results_router, prefix="/api/v1")
+app.include_router(complaints_router, prefix="/api/v1")
 
 
 @app.get("/health")

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_db, require_role
 from app.db.models import Institution, UserRole
 from app.db.session import get_db
-from app.schemas.institutions import InstitutionCreate, InstitutionResponse
+from app.schemas.institutions import InstitutionCreate, InstitutionResponse, InstitutionUpdate
 
 router = APIRouter(prefix="/institutions", tags=["institutions"])
 
@@ -50,4 +50,29 @@ def get_institution(
     institution = db.get(Institution, institution_id)
     if not institution:
         raise HTTPException(status_code=404, detail="Institution not found")
+    return institution
+
+
+@router.patch("/{institution_id}", response_model=InstitutionResponse)
+def update_institution(
+    institution_id: uuid.UUID,
+    body: InstitutionUpdate,
+    db: Session = Depends(get_db),
+    _=Depends(require_role(UserRole.super_admin)),
+):
+    institution = db.get(Institution, institution_id)
+    if not institution:
+        raise HTTPException(status_code=404, detail="Institution not found")
+
+    if body.name is not None:
+        institution.name = body.name
+    if body.contact_email is not None:
+        institution.contact_email = body.contact_email
+    if body.logo_url is not None:
+        institution.logo_url = body.logo_url
+    if body.is_active is not None:
+        institution.is_active = body.is_active
+
+    db.commit()
+    db.refresh(institution)
     return institution

@@ -128,3 +128,30 @@ class ResultRecord(Base):
     grade: Mapped[str] = mapped_column(String(5), nullable=False)
     grade_points: Mapped[float] = mapped_column(Numeric(3, 2), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ComplaintStatus(str, enum.Enum):
+    open = "open"
+    in_progress = "in_progress"
+    resolved = "resolved"
+
+
+class Complaint(Base):
+    __tablename__ = "complaints"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("institutions.id"), nullable=False)
+    student_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    reference_number: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    status: Mapped[ComplaintStatus] = mapped_column(Enum(ComplaintStatus), nullable=False, default=ComplaintStatus.open)
+    admin_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    student: Mapped["User"] = relationship("User", foreign_keys=[student_id])
+
+    @property
+    def student_name(self) -> str:
+        return self.student.full_name if self.student else ""

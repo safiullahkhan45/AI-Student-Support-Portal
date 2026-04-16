@@ -1,9 +1,4 @@
 """add_knowledge_tables
-
-Revision ID: 144173ab755d
-Revises: 535ba3ad682d
-Create Date: 2026-03-25 14:22:15.270646
-
 """
 from typing import Sequence, Union
 

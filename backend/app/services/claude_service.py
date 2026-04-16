@@ -9,7 +9,7 @@ from app.core.config import settings
 _client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
 
-def ask_claude(context: str, messages: list[dict]) -> str:
+def ask_claude(context: str, messages: list[dict], institution_name: str = "the university") -> str:
     """
     Call Claude with RAG context + conversation history.
 
@@ -20,16 +20,16 @@ def ask_claude(context: str, messages: list[dict]) -> str:
     - Say it doesn't know if context doesn't cover the question
     """
     if context:
-        system_prompt = f"""You are a helpful student support assistant for a university.
-Answer the student's question using ONLY the information provided in the context below.
-If the answer is not found in the context, say: "I don't have that information in the knowledge base. Please contact the university administration directly."
-Do not make up information.
+        system_prompt = f"""You are a helpful student support assistant for {institution_name}.
+Answer questions based only on the provided context. If the answer is not in the context, say you don't have that information and suggest the student contact the admin office.
+Be concise, friendly, and professional. Do not make up information.
 
-CONTEXT:
+Context from knowledge base:
+---
 {context}"""
     else:
-        system_prompt = """You are a helpful student support assistant for a university.
-The knowledge base is currently empty. Tell the student you don't have any information available yet and they should contact the university administration."""
+        system_prompt = f"""You are a helpful student support assistant for {institution_name}.
+The knowledge base is currently empty. Tell the student you don't have any information available yet and suggest they contact the admin office."""
 
     response = _client.messages.create(
         model=settings.CLAUDE_MODEL,

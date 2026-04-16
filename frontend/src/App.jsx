@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
 
 import Login from './pages/Login'
+import Register from './pages/Register'
 import StudentPortal from './pages/StudentPortal'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminHome from './pages/AdminHome'
@@ -14,8 +16,9 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public */}
-          <Route path="/login" element={<Login />} />
+          {/* Public — redirect to dashboard if already logged in */}
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
           {/* Student */}
           <Route
