@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import api from '../api/client'
 import MessageInput from './MessageInput'
 
@@ -106,7 +107,7 @@ export default function ChatWindow() {
         )}
 
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div key={msg.id} className={`flex gap-3 animate-slide-up ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
             {msg.role === 'assistant' && (
               <div className="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,13 +116,39 @@ export default function ChatWindow() {
               </div>
             )}
             <div
-              className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+              className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-indigo-600 text-white rounded-tr-sm'
+                  ? 'bg-indigo-600 text-white rounded-tr-sm whitespace-pre-wrap'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm'
               }`}
             >
-              {msg.content}
+              {msg.role === 'user' ? (
+                msg.content
+              ) : (
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                    strong: ({ children }) => <strong className="font-semibold text-slate-900 dark:text-white">{children}</strong>,
+                    h1: ({ children }) => <h1 className="text-base font-bold text-slate-900 dark:text-white mt-3 mb-1 first:mt-0">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-sm font-bold text-slate-900 dark:text-white mt-3 mb-1 first:mt-0">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-2 mb-1 first:mt-0">{children}</h3>,
+                    ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 mb-2">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 mb-2">{children}</ol>,
+                    li: ({ children }) => <li className="text-slate-700 dark:text-slate-300">{children}</li>,
+                    code: ({ inline, children }) =>
+                      inline ? (
+                        <code className="bg-slate-200 dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 px-1 py-0.5 rounded text-xs font-mono">{children}</code>
+                      ) : (
+                        <pre className="bg-slate-200 dark:bg-slate-700 rounded-lg p-3 mt-2 mb-2 overflow-x-auto">
+                          <code className="text-xs font-mono text-slate-800 dark:text-slate-200">{children}</code>
+                        </pre>
+                      ),
+                    hr: () => <hr className="border-slate-300 dark:border-slate-600 my-2" />,
+                  }}
+                >
+                  {msg.content}
+                </ReactMarkdown>
+              )}
             </div>
           </div>
         ))}

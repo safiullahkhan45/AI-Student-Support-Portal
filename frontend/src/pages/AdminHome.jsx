@@ -4,12 +4,12 @@ import api from '../api/client'
 export default function AdminHome() {
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
+      <div className="animate-fade-up">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Dashboard</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Import student data via CSV files.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <CSVImporter
           title="Fee Records"
           description="CSV columns: roll_number, semester, amount_due, amount_paid, due_date, challan_url"

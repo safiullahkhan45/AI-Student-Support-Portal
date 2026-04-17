@@ -82,6 +82,26 @@ def import_fees(
     return ImportSummary(imported=imported, skipped=skipped, skipped_reasons=skipped_reasons)
 
 
+@router.get("/my", response_model=list[FeeRecordResponse])
+def get_my_fees(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return all fee records for the currently logged-in student."""
+    if not current_user.roll_number:
+        return []
+    records = (
+        db.query(FeeRecord)
+        .filter(
+            FeeRecord.tenant_id == current_user.tenant_id,
+            FeeRecord.roll_number == current_user.roll_number,
+        )
+        .order_by(FeeRecord.semester)
+        .all()
+    )
+    return records
+
+
 @router.get("/lookup", response_model=FeeRecordResponse)
 def lookup_fee(
     roll_number: str,

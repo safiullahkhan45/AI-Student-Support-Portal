@@ -66,13 +66,13 @@ export default function AdminKnowledge() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div>
+      <div className="animate-fade-up">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Knowledge Base</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Upload documents that the AI uses to answer student questions.</p>
       </div>
 
       {/* Upload Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 shadow-sm animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4">Upload New Document</h3>
         <form onSubmit={handleUpload} className="space-y-3">
           <label className={`flex items-center gap-3 border-2 border-dashed rounded-xl px-4 py-4 cursor-pointer transition ${

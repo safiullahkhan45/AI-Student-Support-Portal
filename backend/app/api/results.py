@@ -70,6 +70,42 @@ def import_results(
     return ImportSummary(imported=imported, skipped=skipped, skipped_reasons=skipped_reasons)
 
 
+@router.get("/my", response_model=list[ResultLookupResponse])
+def get_my_results(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return all results for the currently logged-in student, grouped by semester."""
+    if not current_user.roll_number:
+        return []
+    records = (
+        db.query(ResultRecord)
+        .filter(
+            ResultRecord.tenant_id == current_user.tenant_id,
+            ResultRecord.roll_number == current_user.roll_number,
+        )
+        .order_by(ResultRecord.semester)
+        .all()
+    )
+    # Group by semester
+    semesters: dict = {}
+    for r in records:
+        semesters.setdefault(r.semester, []).append(r)
+
+    result = []
+    for semester, courses in semesters.items():
+        total_points = sum(float(c.grade_points) * c.credit_hours for c in courses)
+        total_hours = sum(c.credit_hours for c in courses)
+        gpa = round(total_points / total_hours, 2) if total_hours > 0 else 0.0
+        result.append(ResultLookupResponse(
+            roll_number=current_user.roll_number,
+            semester=semester,
+            courses=courses,
+            gpa=gpa,
+        ))
+    return result
+
+
 @router.get("/lookup", response_model=ResultLookupResponse)
 def lookup_results(
     roll_number: str,

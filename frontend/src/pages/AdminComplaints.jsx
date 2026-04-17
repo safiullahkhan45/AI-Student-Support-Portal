@@ -60,12 +60,12 @@ export default function AdminComplaints() {
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="animate-fade-up">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Complaints</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Review and respond to student complaints.</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-5">
+      <div className="flex flex-col lg:flex-row gap-5 animate-fade-up" style={{ animationDelay: '0.1s' }}>
         {/* Left — Table */}
         <div className="flex-1 min-w-0">
           {/* Filters */}

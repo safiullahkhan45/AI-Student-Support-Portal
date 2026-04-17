@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 const NAV_ITEMS = [
   {
@@ -35,11 +36,14 @@ const NAV_ITEMS = [
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth()
+  const { toast } = useToast()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [logoutConfirm, setLogoutConfirm] = useState(false)
 
   function handleLogout() {
     logout()
+    toast('You have been logged out.', 'info')
     navigate('/login')
   }
 
@@ -84,19 +88,20 @@ export default function AdminDashboard() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {NAV_ITEMS.map(({ to, label, icon, end }) => (
+          {NAV_ITEMS.map(({ to, label, icon, end }, i) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition min-h-[44px] ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition min-h-[44px] animate-slide-left ${
                   isActive
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`
               }
+              style={{ animationDelay: `${i * 0.07}s` }}
             >
               {icon}
               {label}
@@ -116,7 +121,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={() => setLogoutConfirm(true)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition min-h-[44px]"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,6 +158,36 @@ export default function AdminDashboard() {
           <Outlet />
         </div>
       </main>
+
+      {/* Logout confirmation modal */}
+      {logoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setLogoutConfirm(false)} />
+          <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700/60 w-full max-w-sm p-6 animate-slide-in">
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/30 mx-auto mb-4">
+              <svg className="w-6 h-6 text-rose-500 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white text-center mb-1">Log out?</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">You'll need to sign in again to access the admin panel.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setLogoutConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white transition"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
