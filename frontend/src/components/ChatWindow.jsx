@@ -3,58 +3,56 @@ import ReactMarkdown from 'react-markdown'
 import api from '../api/client'
 import MessageInput from './MessageInput'
 
-export default function ChatWindow() {
-  const [sessionId, setSessionId] = useState(null)
+export default function ChatWindow({ sessionId, onSessionCreated, onMessageSent }) {
   const [messages, setMessages] = useState([])
   const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState(null)
   const bottomRef = useRef(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('chat_session_id')
-    if (saved) {
-      setSessionId(saved)
-      loadHistory(saved)
-    } else {
-      createSession()
-    }
-  }, [])
+    setMessages([])
+    setError(null)
+    if (sessionId) loadHistory(sessionId)
+  }, [sessionId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
-
-  async function createSession() {
-    try {
-      const res = await api.post('/chat/sessions')
-      const id = res.data.id
-      setSessionId(id)
-      localStorage.setItem('chat_session_id', id)
-    } catch {
-      setError('Failed to start chat session. Please refresh.')
-    }
-  }
 
   async function loadHistory(id) {
     try {
       const res = await api.get(`/chat/sessions/${id}/messages`)
       setMessages(res.data)
     } catch {
-      localStorage.removeItem('chat_session_id')
-      createSession()
+      setError('Failed to load chat history.')
     }
   }
 
   async function handleSend(text) {
-    if (!sessionId) return
-    const userMsg = { id: Date.now(), role: 'user', content: text }
-    setMessages((prev) => [...prev, userMsg])
+    let sid = sessionId
+
+    // Lazily create a session on the very first message
+    if (!sid) {
+      try {
+        const res = await api.post('/chat/sessions')
+        sid = res.data.id
+        if (onSessionCreated) onSessionCreated(res.data)
+      } catch {
+        setError('Failed to start a chat session.')
+        return
+      }
+    }
+
+    const wasEmpty = messages.length === 0
+    setMessages((prev) => [...prev, { id: Date.now(), role: 'user', content: text }])
     setIsTyping(true)
     setError(null)
 
     try {
-      const res = await api.post(`/chat/sessions/${sessionId}/messages`, { content: text })
+      const res = await api.post(`/chat/sessions/${sid}/messages`, { content: text })
       setMessages((prev) => [...prev, res.data])
+      // After the first message the session gets a real title — notify parent to refresh
+      if (wasEmpty && onMessageSent) onMessageSent()
     } catch {
       setError('Failed to get a response. Please try again.')
     } finally {
@@ -76,7 +74,7 @@ export default function ChatWindow() {
           <p className="text-xs text-slate-400 dark:text-slate-500">Powered by your university knowledge base</p>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
           <span className="text-xs text-slate-400 dark:text-slate-500">Online</span>
         </div>
       </div>
@@ -177,8 +175,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <MessageInput onSend={handleSend} disabled={isTyping || !sessionId} />
+      <MessageInput onSend={handleSend} disabled={isTyping} />
     </div>
   )
 }

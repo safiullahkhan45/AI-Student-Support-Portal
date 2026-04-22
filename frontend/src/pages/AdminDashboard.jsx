@@ -65,7 +65,7 @@ export default function AdminDashboard() {
       <aside
         className={`
           fixed md:static inset-y-0 left-0 z-30
-          w-60 bg-slate-900 dark:bg-slate-950 dark:border-r dark:border-slate-800 flex flex-col
+          w-60 h-screen bg-slate-900 dark:bg-slate-950 dark:border-r dark:border-slate-800 flex flex-col
           transform transition-transform duration-200 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:translate-x-0
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map(({ to, label, icon, end }, i) => (
             <NavLink
               key={to}
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 flex flex-col">
+      <main className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
         {/* Mobile top bar */}
         <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 md:hidden shrink-0">
           <button

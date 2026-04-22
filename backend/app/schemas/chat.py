@@ -12,6 +12,12 @@ class SessionResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class SessionSummaryResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    created_at: datetime
+
+
 class SendMessageRequest(BaseModel):
     content: str
 

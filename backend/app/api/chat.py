@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_current_user
 from app.db.models import ChatMessage, ChatSession, Institution, MessageRole, User
 from app.db.session import get_db
-from app.schemas.chat import MessageResponse, SendMessageRequest, SessionResponse
+from app.schemas.chat import MessageResponse, SendMessageRequest, SessionResponse, SessionSummaryResponse
 from app.services.claude_service import ask_claude
 from app.services.rag import retrieve_context
 
@@ -27,6 +27,50 @@ def create_session(
     db.commit()
     db.refresh(session)
     return session
+
+
+@router.get("/sessions", response_model=list[SessionSummaryResponse])
+def list_sessions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """List all chat sessions for the logged-in user, most recent first."""
+    sessions = (
+        db.query(ChatSession)
+        .filter(ChatSession.user_id == current_user.id)
+        .order_by(ChatSession.created_at.desc())
+        .all()
+    )
+    result = []
+    for s in sessions:
+        first_msg = (
+            db.query(ChatMessage)
+            .filter(ChatMessage.session_id == s.id, ChatMessage.role == MessageRole.user)
+            .order_by(ChatMessage.created_at)
+            .first()
+        )
+        if first_msg:
+            raw = first_msg.content
+            title = raw[:60] + ("…" if len(raw) > 60 else "")
+        else:
+            title = "New Chat"
+        result.append(SessionSummaryResponse(id=s.id, title=title, created_at=s.created_at))
+    return result
+
+
+@router.delete("/sessions/{session_id}", status_code=204)
+def delete_session(
+    session_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Delete a chat session and all its messages."""
+    session = db.get(ChatSession, session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Session not found")
+    db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+    db.delete(session)
+    db.commit()
 
 
 @router.post("/sessions/{session_id}/messages", response_model=MessageResponse, status_code=201)
