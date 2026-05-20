@@ -218,7 +218,6 @@ export default function StudentPortal() {
               {/* Chat window */}
               <div className="flex-1 min-w-0 p-4 sm:p-5">
                 <ChatWindow
-                  key={currentSessionId ?? 'new'}
                   sessionId={currentSessionId}
                   onSessionCreated={handleSessionCreated}
                   onMessageSent={loadSessions}

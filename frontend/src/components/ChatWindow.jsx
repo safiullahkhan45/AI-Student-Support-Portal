@@ -8,8 +8,11 @@ export default function ChatWindow({ sessionId, onSessionCreated, onMessageSent 
   const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState(null)
   const bottomRef = useRef(null)
+  const sending = useRef(false)  // true while a lazy session creation + send is in-flight
 
   useEffect(() => {
+    // Skip the reset if we're mid-send (session was just lazily created)
+    if (sending.current) return
     setMessages([])
     setError(null)
     if (sessionId) loadHistory(sessionId)
@@ -33,11 +36,13 @@ export default function ChatWindow({ sessionId, onSessionCreated, onMessageSent 
 
     // Lazily create a session on the very first message
     if (!sid) {
+      sending.current = true  // block useEffect from resetting messages
       try {
         const res = await api.post('/chat/sessions')
         sid = res.data.id
         if (onSessionCreated) onSessionCreated(res.data)
       } catch {
+        sending.current = false
         setError('Failed to start a chat session.')
         return
       }
@@ -51,12 +56,12 @@ export default function ChatWindow({ sessionId, onSessionCreated, onMessageSent 
     try {
       const res = await api.post(`/chat/sessions/${sid}/messages`, { content: text })
       setMessages((prev) => [...prev, res.data])
-      // After the first message the session gets a real title — notify parent to refresh
       if (wasEmpty && onMessageSent) onMessageSent()
     } catch {
       setError('Failed to get a response. Please try again.')
     } finally {
       setIsTyping(false)
+      sending.current = false  // allow future session switches to reset normally
     }
   }
 

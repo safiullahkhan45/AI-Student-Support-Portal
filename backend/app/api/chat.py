@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -93,12 +94,13 @@ def send_message(
     if not session or session.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # 1. Save user message
+    # 1. Save user message — explicit timestamp so ORDER BY is always correct
     user_msg = ChatMessage(
         id=uuid.uuid4(),
         session_id=session_id,
         role=MessageRole.user,
         content=body.content,
+        created_at=datetime.now(timezone.utc),
     )
     db.add(user_msg)
     db.flush()
@@ -120,12 +122,13 @@ def send_message(
     # 5. Call Claude
     reply_text = ask_claude(context=context, messages=messages, institution_name=institution_name)
 
-    # 5. Save assistant reply
+    # 5. Save assistant reply — timestamp after Claude responds, always > user_msg
     assistant_msg = ChatMessage(
         id=uuid.uuid4(),
         session_id=session_id,
         role=MessageRole.assistant,
         content=reply_text,
+        created_at=datetime.now(timezone.utc),
     )
     db.add(assistant_msg)
     db.commit()

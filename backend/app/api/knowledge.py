@@ -44,10 +44,10 @@ async def upload_document(
     try:
         text = extract_text(file_bytes, mime_type)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=422, detail=str(e))
 
     if not text.strip():
-        raise HTTPException(status_code=400, detail="Could not extract any text from file")
+        raise HTTPException(status_code=422, detail="Could not extract any text from file")
 
     # 4. Split text into chunks
     chunks = chunk_text(text)
